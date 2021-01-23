@@ -2,6 +2,8 @@ const router = require('express').Router();
 const { Product, Category, Tag, ProductTag } = require('../../models');
 
 // The `/api/products` endpoint
+
+// get all products
 router.get('/', async (req, res) => {
   try {
     const productsData = await Product.findAll({
@@ -14,8 +16,11 @@ router.get('/', async (req, res) => {
   } catch (err) {
     res.status(500).json(err);
   };
+  // find all products
+  // be sure to include its associated Category and Tag data
 });
 
+// get one product
 router.get('/:id', async (req, res) => {
   try {
     const productsData = await Product.findByPk(req.params.id, {
@@ -28,9 +33,12 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json(err);
   };
+  // find a single product by its `id`
+  // be sure to include its associated Category and Tag data
 });
+
 // create new product
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -48,6 +56,7 @@ router.post('/', (req, res) => {
             product_id: product.id,
             tag_id,
           };
+          
         });
         return ProductTag.bulkCreate(productTagIdArr);
       }
@@ -62,7 +71,7 @@ router.post('/', (req, res) => {
 });
 
 // update product
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   // update product data
   Product.update(req.body, {
     where: {
@@ -98,12 +107,25 @@ router.put('/:id', (req, res) => {
     })
     .then((updatedProductTags) => res.json(updatedProductTags))
     .catch((err) => {
-      // console.log(err);
+      console.log(err);
       res.status(400).json(err);
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
+  try {
+    const productsData = await Product.destroy({
+      where: {
+        id: req.params.id,
+      }
+    });
+    if(!productsData) {
+      res.status(404).json({ message: 'No Products Found, Nothing Deleted!'});
+    }
+    res.status(200).json({ message: `Product ID: ${req.params.id} Deleted!`});
+  } catch (err) {
+    res.status(500).json(err);
+  };
   // delete one product by its `id` value
 });
 
